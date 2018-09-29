@@ -55,6 +55,7 @@ transLines = transLines %>%
   mutate(commentFull = paste(commentFull, collapse = " ")) %>% 
   slice(., 1L) %>% 
   ungroup() %>% 
-  select(name, role, commentFull)
+  select(name, role, commentFull) %>% 
+  distinct()
 
 write.csv(transLines, "parsedTranscript.csv", row.names = FALSE)
