@@ -6,6 +6,14 @@ library(dplyr)
 
 transLines = data.frame(comments = readLines("transcriptLines.txt"), stringsAsFactors = FALSE)
 
+senatorParty = transLines$comments[which(grepl("^SPEAKERS", transLines$comments))[[1]]:(which(grepl("^WITNESSES", transLines$comments))[[1]] - 1)]
+
+senatorParty = data.frame(name = stringr::str_extract(senatorParty, "[?>A-Z]+,"),
+                        party = stringr::str_extract(senatorParty, "(?>[RD])-")) %>% 
+  mutate(name = stringr::str_replace(.$name, ",", ""),
+         party = stringr::str_replace(.$party, "-", "")) %>% 
+  na.omit()
+
 speakers = transLines$comments[which(grepl("^SPEAKERS", transLines$comments))[[1]]:(which(grepl("^WITNESSES", transLines$comments))[[1]] - 1)]
 
 speakers = stringr::str_extract(speakers, "[?>A-Z]+,")
@@ -58,4 +66,9 @@ transLines = transLines %>%
   select(name, role, commentFull) %>% 
   distinct()
 
+
+transLines = left_join(transLines, senatorParty, by = "name")
+
 write.csv(transLines, "parsedTranscript.csv", row.names = FALSE)
+
+transLines %>% select(-role, - party) %>% write.csv(., "qdapTranscript.csv", row.names = FALSE)
