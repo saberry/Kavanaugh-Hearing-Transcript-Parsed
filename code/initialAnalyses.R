@@ -2,23 +2,30 @@
 ### Initial Goofing ###
 #######################
 
+library(ca)
+
+library(dplyr)
+
 library(ggplot2)
 
 library(sentimentr)
 
 library(qdap)
 
-kavTrans = read.transcript("qdapTranscript.csv", 
+kavTrans = read.transcript("data/qdapTranscript.csv", 
                            col.names = c("name", "commentFull"), 
                            text.var = "commentFull", header = TRUE)
 
-allData = read.csv("parsedTranscript.csv", stringsAsFactors = FALSE)
+allData = read.csv("data/parsedTranscript.csv", stringsAsFactors = FALSE)
+
+genderData = read.csv("data/genderData.csv")
 
 allData = allData %>% 
   select(name, party) %>% 
   distinct()
 
-kavTrans = left_join(kavTrans, allData, by = "name")
+kavTrans = left_join(kavTrans, allData, by = "name") %>% 
+  left_join(., genderData, by = "name")
 
 kavTrans$party[is.na(kavTrans$party)] = "witness"
 
@@ -43,13 +50,15 @@ trans_cloud(text.var = kavTrans$commentFull, grouping.var = kavTrans$name,
 ## Conversation Flow
 
 gantt_plot(text.var = kavTrans$commentFull,
-           grouping.var = list(kavTrans$name, kavTrans$party), size = 4)
+           grouping.var = list(kavTrans$name, kavTrans$party, kavTrans$gender), size = 4)
 
 ## Sentence Splitting
 
 splitTrans = sentSplit(kavTrans, "commentFull")
 
-wordStat = word_stats(splitTrans$commentFull, splitTrans$name, tot = splitTrans$tot)
+wordStat = word_stats(splitTrans$commentFull, 
+                      grouping.var = list(splitTrans$name, splitTrans$gender),
+                      tot = splitTrans$tot)
 
 plot(wordStat)
 
@@ -75,3 +84,18 @@ ggplot(allSentiment, aes(sentenceOrder, name, color = sentiment)) +
 ## Question Type
 
 questionTypes = question_type(splitTrans$commentFull, splitTrans$name, neg.cont = TRUE)
+
+
+## Word Differences
+
+wordDiffs = word_diff_list(kavTrans$commentFull, grouping.var = kavTrans$party)
+
+ltruncdf(unlist(wordDiffs, recursive = FALSE), n = 5)
+
+## Correspondence Analysis
+
+caTest = wfm(kavTrans$commentFull, grouping.var = list(kavTrans$party, kavTrans$gender))
+
+caFit = ca(caTest)
+
+plot(caFit)
