@@ -12,6 +12,8 @@ library(sentimentr)
 
 library(qdap)
 
+library(quanteda.dictionaries)
+
 kavTrans = read.transcript("data/qdapTranscript.csv", 
                            col.names = c("name", "commentFull"), 
                            text.var = "commentFull", header = TRUE)
@@ -28,6 +30,12 @@ kavTrans = left_join(kavTrans, allData, by = "name") %>%
   left_join(., genderData, by = "name")
 
 kavTrans$party[is.na(kavTrans$party)] = "witness"
+
+## quanteda test
+
+testNRC = liwcalike(kavTrans$commentFull, data_dictionary_NRC)
+
+testRID = liwcalike(kavTrans$commentFull, data_dictionary_RID)
 
 ## Person Formality
 
