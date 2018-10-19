@@ -4,7 +4,10 @@
 
 library(dplyr)
 
-transLines = data.frame(comments = readLines("transcriptLines.txt"), stringsAsFactors = FALSE)
+# transLines = data.frame(comments = readLines("data/transcriptLines.txt", encoding = "UTF-8"), 
+#                         stringsAsFactors = FALSE)
+
+transLines = read.csv("data/transcriptLines.csv", stringsAsFactors = FALSE, fileEncoding = "UTF-8")
 
 senatorParty = transLines$comments[which(grepl("^SPEAKERS", transLines$comments))[[1]]:(which(grepl("^WITNESSES", transLines$comments))[[1]] - 1)]
 
@@ -69,6 +72,8 @@ transLines = transLines %>%
 
 transLines = left_join(transLines, senatorParty, by = "name")
 
-write.csv(transLines, "parsedTranscript.csv", row.names = FALSE)
+write.csv(transLines, "data/parsedTranscript.csv", row.names = FALSE, 
+          fileEncoding = "UTF-8")
 
-transLines %>% select(-role, - party) %>% write.csv(., "qdapTranscript.csv", row.names = FALSE)
+transLines %>% select(-role, - party) %>% write.csv(., "data/qdapTranscript.csv", row.names = FALSE, 
+                                                    fileEncoding = "UTF-8")
