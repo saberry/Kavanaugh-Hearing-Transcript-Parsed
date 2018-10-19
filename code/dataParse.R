@@ -33,7 +33,9 @@ dropIntroRows = 1:(which(grepl("^\\[\\*\\]", transLines$comments))[[1]] - 1)
 
 dropBreakRows = which(grepl("SENATE JUDICIARY COMMITTEE HEARING", transLines$comments))[[2]]:which(grepl("^WITNESSES", transLines$comments))[[2]]
 
-transLines = data.frame(comments = transLines[-c(dropIntroRows, dropBreakRows), ])
+dropEndLines = (which(grepl("Hearing adjourned.", transLines$comments)) + 1):nrow(transLines)
+
+transLines = data.frame(comments = transLines[-c(dropIntroRows, dropBreakRows, dropEndLines), ])
 
 transLines$comments = gsub("^\\[\\*\\]\\s", "", transLines$comments)
 
